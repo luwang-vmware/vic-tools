@@ -47,6 +47,8 @@ export RUN_AS_OPS_USER=${RUN_AS_OPS_USER:-${DEFAULT_RUN_AS_OPS_USER}}
 PARALLEL_JOBS=${PARALLEL_JOBS:-${DEFAULT_PARALLEL_JOBS}}
 
 SCRIPT_DIR=$(cd $(dirname "$0") && pwd)
+echo ${SCRIPT_DIR}
+exit 1
 
 if [[ $1 != "6.0" && $1 != "6.5" && $1 != "6.7" ]]; then
     echo "Please specify a target version. One of: 6.0, 6.5, 6.7"
@@ -140,7 +142,7 @@ pushd vic
 
     # archive the logs
     logarchive="logs_vch-${VCH_BUILD}-${VCH_COMMIT}_test-${BUILD_ID}-${GIT_COMMIT}_${BUILD_TIMESTAMP}.zip"
-    /usr/bin/zip -9 -r "${logarchive}" report *.zip *.log *.debug *.tgz
+    /usr/bin/zip -9 -r "${logarchive}" report *.tar.gz
     if [ $? -eq 0 ]; then
         ${SCRIPT_DIR}/upload-logs.sh ${logarchive} ${LOG_UPLOAD_DEST}
     fi

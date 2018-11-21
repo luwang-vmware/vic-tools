@@ -14,8 +14,9 @@
 # limitations under the License
 set -x
 
-WORKSPACE_DIR=$(cd $(dirname "$0")/../../../.. && pwd)
+SCRIPT_DIR=$(dirname "$0")
 
+WORKSPACE_DIR=$(cd $(dirname "$0")/../../../.. && pwd)
 # 6.0u3
 ESX_60_VERSION="ob-5050593"
 VC_60_VERSION="ob-5112509" # the cloudvm build corresponding to the vpx build
@@ -101,8 +102,8 @@ pushd ${WORKSPACE_DIR}/vic-product
     sed -i -e 's|FAIL|<font color="red">FAIL</font>|g' console.log
     cp -R test-screenshots report 2>/dev/null || echo "no test-screenshots directory"
         # archive the logs
-    logarchive="vic-product-scenarios__${BUILD_TIMESTAMP}.zip"
-    /usr/bin/zip -9 -r "${logarchive}" report
+    logarchive="vic-product-scenarios_${BUILD_ID}_${BUILD_TIMESTAMP}.zip"
+    /usr/bin/zip -9 -r "${logarchive}" report *.tar.gz 
     if [ $? -eq 0 ]; then
         ${SCRIPT_DIR}/upload-logs.sh ${logarchive} vic-product-logs/test
     fi
