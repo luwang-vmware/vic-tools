@@ -96,8 +96,26 @@ pushd ${WORKSPACE_DIR}/vic-product
     fi
     echo "VIC Product OVA download complete..."
 
-    PARALLEL_JOBS=${PARALLEL_JOBS:-${DEFAULT_PARALLEL_JOBS}}
-    pabot --verbose --processes "${PARALLEL_JOBS}" -d report "${excludes[@]}" --variable ESX_VERSION:"${ESX_BUILD}" --variable VC_VERSION:"${VC_BUILD}" --variable NIMBUS_LOCATION:"${NIMBUS_LOCATION}" "${testcases[@]}"
+    users=(${NIMBUS_PERSONAL_USER})
+    PARALLEL_JOBS=${#users[@]}
+    if [[ $PARALLEL_JOBS -ne 1 ]];then
+        cat > valueset.dat <<ENVS
+[USER=0]
+NIMBUS_PERSONAL_USER=notused
+ENVS
+        for (( i = 0 ; i < ${#users[@]} ; i++ ))
+        do
+            idx=$(($i+1))
+            cat >> valueset.dat <<ENVS
+[USER=$idx]
+NIMBUS_PERSONAL_USER=${users[$i]}
+ENVS
+done
+    
+    pabot --verbose --processes "${PARALLEL_JOBS}" --pabotlib --resourcefile valueset.dat --listener tests/resources/new_listener.py -d report "${excludes[@]}" --variable ESX_VERSION:"${ESX_BUILD}" --variable VC_VERSION:"${VC_BUILD}" --variable NIMBUS_LOCATION:"${NIMBUS_LOCATION}" "${testcases[@]}"
+    fi
+#    PARALLEL_JOBS=${PARALLEL_JOBS:-${DEFAULT_PARALLEL_JOBS}}
+ #   pabot --verbose --processes "${PARALLEL_JOBS}" -d report "${excludes[@]}" --variable ESX_VERSION:"${ESX_BUILD}" --variable VC_VERSION:"${VC_BUILD}" --variable NIMBUS_LOCATION:"${NIMBUS_LOCATION}" "${testcases[@]}"
     cat report/pabot_results/*/stdout.txt | grep -E '::|\.\.\.' | grep -E 'PASS|FAIL' > console.log
 
     # Pretty up the email results
